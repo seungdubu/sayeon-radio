@@ -26,8 +26,8 @@ export default function Home() {
   const [mood, setMood] = useState(null);
   const [genre, setGenre] = useState("상관없음");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
+  const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const requestSongs = async () => {
     if (!story.trim() || loading) return;
