@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import type { CSSProperties } from "react";
 
 const MOODS = [
   "사이다가 필요해",
@@ -261,7 +261,7 @@ textarea::placeholder { color: #565b70; }
 body { margin: 0; }
 `;
 
-const styles = {
+const styles: { [key: string]: CSSProperties } = {
   page: {
     minHeight: "100vh",
     background: "#12141f",
