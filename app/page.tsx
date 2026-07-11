@@ -23,7 +23,7 @@ const GENRES = [
 
 export default function Home() {
   const [story, setStory] = useState("");
-  const [mood, setMood] = useState(null);
+  const [mood, setMood] = useState<string | null>(null);
   const [genre, setGenre] = useState("상관없음");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
