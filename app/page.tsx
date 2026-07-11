@@ -46,7 +46,8 @@ export default function Home() {
       if (!response.ok) throw new Error(data.error || "선곡 실패");
       setResult(data);
     } catch (e) {
-      setError(`선곡에 실패했어요. (${e.message}) 다시 신청해 주세요.`);
+      const message = e instanceof Error ? e.message : "알 수 없는 오류";
+      setError(`선곡에 실패했어요. (${message}) 다시 신청해 주세요.`);
     } finally {
       setLoading(false);
     }
