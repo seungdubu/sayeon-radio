@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 사연 선곡실 🎧
 
-## Getting Started
+> 지금 마음을 적으면, AI DJ가 감정에 맞는 노래 5곡을 골라주는 심야 라디오 컨셉 웹서비스
 
-First, run the development server:
+🔗 **[사연 선곡실 체험하기](https://sayeon-radio.vercel.app/)** 
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 소개
+
+이별, 지친 하루, 설렘, 위로가 필요한 순간 등 사용자가 자유롭게 적은 사연을 읽고, AI가 그 감정에 어울리는 노래 5곡을 선곡해주는 서비스입니다. 단순히 AI가 곡을 "지어내는" 데서 그치지 않고, 실제 음원 데이터베이스와 대조해 **실존하는 곡만 추천**하도록 설계했습니다.
+
+## 주요 기능
+
+- 자유 서술형 사연 입력 + 기분/장르 선택(선택 사항)
+- Claude API 기반 감정 분석 및 곡 추천
+- 추천된 곡을 실시간으로 검증해, 존재하지 않는 곡(AI 환각)을 자동 필터링
+- 앨범 커버, 공식 곡명/아티스트명, 재생 링크(Spotify 또는 Apple Music) 제공
+- 곡마다 DJ가 직접 쓴 한 줄 감상 포함 (가사 아님, 저작권 안전)
+
+## 기술 스택
+
+| 영역 | 기술 |
+|---|---|
+| 프레임워크 | Next.js (App Router), TypeScript |
+| AI | Anthropic Claude API |
+| 음원 검증 | Spotify Web API (우선) → iTunes Search API (자동 대체) |
+| 배포 | Vercel |
+| 스타일 | 인라인 스타일 (CSS-in-JS 방식) |
+
+## 아키텍처
+
+```
+[브라우저]
+   │  사연 + 기분 + 장르
+   ▼
+[Next.js API Route (서버)]
+   │  ① Claude에게 후보 10곡 요청
+   │  ② 후보 곡을 하나씩 Spotify로 실존 검증
+   │     └ Spotify 응답 불가(403 등) 시 → iTunes로 자동 전환
+   │  ③ 검증 통과한 곡 중 최대 5개만 선별
+   ▼
+[브라우저]
+   최종 5곡 + 앨범 커버 + 재생 링크 표시
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+API 키(Anthropic, Spotify)는 모두 서버 환경변수에만 존재하며, 브라우저로 전달되지 않습니다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 설계 상의 주요 결정
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**1. AI 환각(hallucination) 대응**
+Claude에게 5곡이 아닌 **10곡의 후보**를 요청한 뒤, 각 곡을 음원 검색 API로 실존 여부를 확인합니다. 검색되지 않는 곡(존재하지 않거나 정보가 부정확한 곡)은 자동으로 걸러지고, 실제로 확인된 곡만 최종 5곡에 포함됩니다. AI 추천에 외부 데이터 검증 레이어를 더한 구조입니다.
 
-## Learn More
+**2. 저작권을 고려한 콘텐츠 설계**
+가사는 원문 한 줄도 저장·표시하지 않습니다. 대신 각 곡에는 AI DJ가 직접 작성한 한 줄 감상을 인용구 형태로 붙였습니다. 곡 정보(제목, 아티스트, 앨범 커버)는 음원 API의 공식 메타데이터를 그대로 사용하고, 실제 재생은 Spotify/Apple Music/YouTube 링크로 연결해 저작물 자체를 다루지 않도록 설계했습니다.
 
-To learn more about Next.js, take a look at the following resources:
+**3. 외부 API 정책 변화에 대한 대응 (Spotify → iTunes 하이브리드)**
+개발 도중 Spotify가 Web API 정책을 변경해, 개발자 계정에 Premium 구독이 없으면 검색 API 사용이 제한되는 것을 확인했습니다. 이에 대응해 **Spotify를 우선 시도하되, 403 응답을 감지하면 즉시 iTunes Search API(무료, 인증 불필요)로 자동 전환**하는 하이브리드 검증 로직을 구현했습니다. 이 구조 덕분에 Spotify 구독이 만료되거나 정책이 다시 바뀌어도 서비스가 중단되지 않습니다.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 로컬 실행
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm install
 
-## Deploy on Vercel
+# .env.local 파일 생성 후 아래 값 입력
+# ANTHROPIC_API_KEY=...
+# SPOTIFY_CLIENT_ID=...       (선택)
+# SPOTIFY_CLIENT_SECRET=...   (선택, 없으면 iTunes로 자동 동작)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+npm run dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`http://localhost:3000` 접속
+
+## 배운 점
+
+- LLM 기반 추천 시스템에서 "그럴듯하지만 틀린 답변"을 걸러내려면, 별도의 검증 레이어(RAG 또는 외부 API 대조)가 필요합니다.
+- 외부 서비스의 API 정책은 예고 없이 바뀔 수 있으므로, 단일 API에 의존하기보다 대체 경로(fallback)를 설계해두는 것이 서비스 안정성에 중요합니다.
+- JavaScript에서 TypeScript로 옮길 때는 `useState`의 상태 타입, `catch` 블록의 `unknown` 타입, 스타일 객체의 CSS 타입 등에서 반복적으로 타입 에러가 발생하는데, 타입을 명시적으로 선언해두면 이후 유지보수가 훨씬 쉬워집니다.
+
+## 라이선스 및 콘텐츠 고지
+
+본 프로젝트는 학습 및 포트폴리오 목적으로 제작되었습니다. 가사 원문은 어떠한 형태로도 저장·표시하지 않으며, 곡 정보는 각 음원 플랫폼의 공식 API를 통해 실시간으로 조회한 메타데이터입니다.
