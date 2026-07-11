@@ -3,6 +3,22 @@
 import { useState } from "react";
 import type { CSSProperties } from "react";
 
+type Song = {
+  title: string;
+  artist: string;
+  reason?: string;
+  one_liner?: string;
+  mood?: string;
+  albumArt?: string | null;
+  listenUrl?: string | null;
+  listenLabel?: string;
+};
+
+type Result = {
+  dj_comment?: string;
+  songs: Song[];
+};
+
 const MOODS = [
   "사이다가 필요해",
   "울고 싶어",
@@ -27,7 +43,7 @@ export default function Home() {
   const [mood, setMood] = useState<string | null>(null);
   const [genre, setGenre] = useState("상관없음");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<Result | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const requestSongs = async () => {
@@ -37,7 +53,6 @@ export default function Home() {
     setResult(null);
 
     try {
-      // 서버 하나만 부르면 끝. 키는 서버에 있어서 여기엔 없음.
       const response = await fetch("/api/recommend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -166,7 +181,7 @@ export default function Home() {
             </div>
 
             <ol style={styles.trackList}>
-              {result.songs.map((s, i) => (
+              {result.songs.map((s: Song, i: number) => (
                 <li key={i} style={styles.track}>
                   <div style={styles.trackTop}>
                     {s.albumArt ? (
@@ -185,14 +200,14 @@ export default function Home() {
                   {s.one_liner && <p style={styles.oneLiner}>“{s.one_liner}”</p>}
                   <p style={styles.reason}>{s.reason}</p>
                   <div style={{ display: "flex", gap: 16 }}>
-                    {s.listenUrl  && (
+                    {s.listenUrl && (
                       <a
-                        href={s.listenUrl }
+                        href={s.listenUrl}
                         target="_blank"
                         rel="noreferrer"
                         style={styles.listen}
                       >
-                        Spotify에서 듣기 →
+                        {s.listenLabel} →
                       </a>
                     )}
                     <a
@@ -218,7 +233,7 @@ export default function Home() {
       </main>
 
       <footer style={styles.footer}>
-        모든 곡은 Spotify에서 실존 확인 후 표시돼요 · 인용구는 가사가 아닌 DJ의 감상 · 가사는 저장·표시하지 않습니다
+        모든 곡은 음원 데이터베이스에서 실존 확인 후 표시돼요 · 인용구는 가사가 아닌 DJ의 감상 · 가사는 저장·표시하지 않습니다
       </footer>
     </div>
   );
