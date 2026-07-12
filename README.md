@@ -152,12 +152,13 @@ app
 # 📷 Preview
 
 > 메인 화면
+<img width="627" height="842" alt="image" src="https://github.com/user-attachments/assets/e2ba9a71-ea6d-4ecd-a621-f1c5ee4f521e" />
 
-(서비스 메인 이미지)
 
 > 추천 결과
+<img width="1120" height="840" alt="image" src="https://github.com/user-attachments/assets/efe3d562-93f9-4c72-ac67-b133919e3fe3" />
 
-(추천 결과 이미지)
+
 
 ---
 
