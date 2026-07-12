@@ -1,83 +1,289 @@
-# 사연 선곡실 🎧
+# 🎧 사연 선곡실 | AI 감정 기반 음악 추천 서비스
 
-> 지금 마음을 적으면, AI DJ가 감정에 맞는 노래 5곡을 골라주는 심야 라디오 컨셉 웹서비스
+> **Claude API와 음원 데이터를 결합하여 상황과 감정에 맞는 실제 존재하는 음악을 추천하는 AI 기반 웹서비스**
 
-🔗 **[사연 선곡실 체험하기](https://sayeon-radio.vercel.app/)** 
+🔗 **Demo**  
+https://sayeon-radio.vercel.app/
 
 ---
 
-## 소개
+# 📌 Project Overview
 
-이별, 지친 하루, 설렘, 위로가 필요한 순간 등 사용자가 자유롭게 적은 사연을 읽고, AI가 그 감정에 어울리는 노래 5곡을 선곡해주는 서비스입니다. 단순히 AI가 곡을 "지어내는" 데서 그치지 않고, 실제 음원 데이터베이스와 대조해 **실존하는 곡만 추천**하도록 설계했습니다.
+사연 선곡실은 사용자가 자신의 상황과 감정을 자유롭게 작성하면 AI가 감정을 이해하고 현재 상황에 어울리는 음악을 추천하는 서비스입니다.
 
-## 주요 기능
+기존 AI 추천은 존재하지 않는 곡을 추천하거나(환각), 실제 음원과 일치하지 않는 정보를 제공하는 문제가 있었습니다.
 
-- 자유 서술형 사연 입력 + 기분/장르 선택(선택 사항)
-- Claude API 기반 감정 분석 및 곡 추천
-- 추천된 곡을 실시간으로 검증해, 존재하지 않는 곡(AI 환각)을 자동 필터링
-- 앨범 커버, 공식 곡명/아티스트명, 재생 링크(Spotify 또는 Apple Music) 제공
-- 곡마다 DJ가 직접 쓴 한 줄 감상 포함 (가사 아님, 저작권 안전)
+이를 해결하기 위해 Claude API의 추천 결과를 Spotify와 iTunes API로 다시 검증하여 **실제 존재하는 곡만 추천하는 구조**를 설계했습니다.
 
-## 기술 스택
+---
 
-| 영역 | 기술 |
-|---|---|
-| 프레임워크 | Next.js (App Router), TypeScript |
-| AI | Anthropic Claude API |
-| 음원 검증 | Spotify Web API (우선) → iTunes Search API (자동 대체) |
-| 배포 | Vercel |
-| 스타일 | 인라인 스타일 (CSS-in-JS 방식) |
+# 🎯 Problem
 
-## 아키텍처
+- 현재 상황과 감정에 맞는 음악 탐색의 어려움
+- LLM 기반 추천 서비스의 Hallucination 문제
+- 실제 존재하지 않는 곡 추천 가능성
+- 외부 API 정책 변화에 따른 서비스 불안정성
 
+---
+
+# 💡 Solution
+
+Claude API를 이용해 추천 후보를 생성하고,
+
+Spotify API와 iTunes API를 이용하여
+
+추천 결과를 다시 검증하는 구조를 구현했습니다.
+
+이를 통해
+
+- 감정 기반 음악 추천
+- 실제 존재하는 음원 검증
+- 앨범 이미지 제공
+- 재생 링크 제공
+- DJ 코멘트 생성
+
+을 하나의 서비스로 구현했습니다.
+
+---
+
+# ✨ Key Features
+
+## 🤖 AI Recommendation
+
+- 자유 서술형 사연 입력
+- 감정 및 장르 선택
+- Claude API 기반 감정 분석
+- 상황 맞춤 음악 추천
+
+---
+
+## ✅ Recommendation Validation
+
+- Spotify API 실존 검증
+- iTunes API 자동 대체(Fallback)
+- Hallucination 자동 제거
+- 최대 5곡 추천
+
+---
+
+## 🎵 User Experience
+
+- 앨범 커버 제공
+- 공식 아티스트 정보
+- Spotify / Apple Music 재생 링크
+- AI DJ 코멘트 제공
+
+---
+
+# ⚙️ Recommendation Workflow
+
+```text
+사용자 입력
+
+        ↓
+
+Claude API 추천 후보 생성
+
+        ↓
+
+Spotify API 검증
+
+        ↓
+
+실패 시
+
+        ↓
+
+iTunes API 검증
+
+        ↓
+
+검증 완료
+
+        ↓
+
+최종 추천 5곡 제공
 ```
-[브라우저]
-   │  사연 + 기분 + 장르
-   ▼
-[Next.js API Route (서버)]
-   │  ① Claude에게 후보 10곡 요청
-   │  ② 후보 곡을 하나씩 Spotify로 실존 검증
-   │     └ Spotify 응답 불가(403 등) 시 → iTunes로 자동 전환
-   │  ③ 검증 통과한 곡 중 최대 5개만 선별
-   ▼
-[브라우저]
-   최종 5곡 + 앨범 커버 + 재생 링크 표시
+
+---
+
+# 🛠 Tech Stack
+
+## Frontend
+
+- Next.js
+- React
+- TypeScript
+
+## AI
+
+- Claude API
+
+## Music APIs
+
+- Spotify Web API
+- iTunes Search API
+
+## Deployment
+
+- Vercel
+
+---
+
+# 📂 Project Structure
+
+```text
+app
+
+├── page.tsx
+│   사용자 인터페이스
+│
+├── api/
+│   └── recommend/
+│        route.js
+│
+├── components/
+│
+└── public/
 ```
 
-API 키(Anthropic, Spotify)는 모두 서버 환경변수에만 존재하며, 브라우저로 전달되지 않습니다.
+---
 
-## 설계 상의 주요 결정
+# 📷 Preview
 
-**1. AI 환각(hallucination) 대응**
-Claude에게 5곡이 아닌 **10곡의 후보**를 요청한 뒤, 각 곡을 음원 검색 API로 실존 여부를 확인합니다. 검색되지 않는 곡(존재하지 않거나 정보가 부정확한 곡)은 자동으로 걸러지고, 실제로 확인된 곡만 최종 5곡에 포함됩니다. AI 추천에 외부 데이터 검증 레이어를 더한 구조입니다.
+> 메인 화면
 
-**2. 저작권을 고려한 콘텐츠 설계**
-가사는 원문 한 줄도 저장·표시하지 않습니다. 대신 각 곡에는 AI DJ가 직접 작성한 한 줄 감상을 인용구 형태로 붙였습니다. 곡 정보(제목, 아티스트, 앨범 커버)는 음원 API의 공식 메타데이터를 그대로 사용하고, 실제 재생은 Spotify/Apple Music/YouTube 링크로 연결해 저작물 자체를 다루지 않도록 설계했습니다.
+(서비스 메인 이미지)
 
-**3. 외부 API 정책 변화에 대한 대응 (Spotify → iTunes 하이브리드)**
-개발 도중 Spotify가 Web API 정책을 변경해, 개발자 계정에 Premium 구독이 없으면 검색 API 사용이 제한되는 것을 확인했습니다. 이에 대응해 **Spotify를 우선 시도하되, 403 응답을 감지하면 즉시 iTunes Search API(무료, 인증 불필요)로 자동 전환**하는 하이브리드 검증 로직을 구현했습니다. 이 구조 덕분에 Spotify 구독이 만료되거나 정책이 다시 바뀌어도 서비스가 중단되지 않습니다.
+> 추천 결과
 
-## 로컬 실행
+(추천 결과 이미지)
+
+---
+
+# 🚀 Getting Started
+
+## Install
 
 ```bash
 npm install
+```
 
-# .env.local 파일 생성 후 아래 값 입력
-# ANTHROPIC_API_KEY=...
-# SPOTIFY_CLIENT_ID=...       (선택)
-# SPOTIFY_CLIENT_SECRET=...   (선택, 없으면 iTunes로 자동 동작)
+---
 
+## Environment
+
+`.env.local`
+
+```env
+ANTHROPIC_API_KEY=
+
+SPOTIFY_CLIENT_ID=
+
+SPOTIFY_CLIENT_SECRET=
+```
+
+Spotify API가 없더라도
+
+자동으로 iTunes API를 사용합니다.
+
+---
+
+## Run
+
+```bash
 npm run dev
 ```
 
-`http://localhost:3000` 접속
+localhost:3000
 
-## 배운 점
+---
 
-- LLM 기반 추천 시스템에서 "그럴듯하지만 틀린 답변"을 걸러내려면, 별도의 검증 레이어(RAG 또는 외부 API 대조)가 필요합니다.
-- 외부 서비스의 API 정책은 예고 없이 바뀔 수 있으므로, 단일 API에 의존하기보다 대체 경로(fallback)를 설계해두는 것이 서비스 안정성에 중요합니다.
-- JavaScript에서 TypeScript로 옮길 때는 `useState`의 상태 타입, `catch` 블록의 `unknown` 타입, 스타일 객체의 CSS 타입 등에서 반복적으로 타입 에러가 발생하는데, 타입을 명시적으로 선언해두면 이후 유지보수가 훨씬 쉬워집니다.
+# 📊 Architecture
 
-## 라이선스 및 콘텐츠 고지
+```text
+Browser
 
-본 프로젝트는 학습 및 포트폴리오 목적으로 제작되었습니다. 가사 원문은 어떠한 형태로도 저장·표시하지 않으며, 곡 정보는 각 음원 플랫폼의 공식 API를 통해 실시간으로 조회한 메타데이터입니다.
+        ↓
+
+Next.js API
+
+        ↓
+
+Claude API
+
+        ↓
+
+Spotify Validation
+
+        ↓
+
+iTunes Fallback
+
+        ↓
+
+Verified Songs
+
+        ↓
+
+Browser
+```
+
+---
+
+# 📈 Technical Highlights
+
+### AI Hallucination 대응
+
+Claude가 추천한 후보곡을 그대로 사용하지 않고,
+
+외부 음원 API를 이용해 실존 여부를 검증하는 구조를 설계했습니다.
+
+---
+
+### API Failover
+
+Spotify 검색 실패(403 등)를 감지하면
+
+자동으로 iTunes API로 전환하여
+
+서비스 중단 없이 추천이 가능하도록 구현했습니다.
+
+---
+
+### Copyright-safe Design
+
+가사 원문은 저장하거나 출력하지 않고,
+
+AI가 생성한 DJ 코멘트와
+
+공식 음원 메타데이터만 제공합니다.
+
+---
+
+# 📈 Outcome
+
+본 프로젝트를 통해
+
+- LLM 기반 추천 서비스 구현
+- Hallucination 검증 구조 설계
+- 다중 API 연동 경험
+- API Failover 구조 구현
+- AI 기반 사용자 경험 설계
+
+를 수행했습니다.
+
+---
+
+# 💭 Why I Built This
+
+단순한 음악 추천 서비스가 아니라,
+
+**사용자의 감정을 이해하고, AI 추천 결과를 신뢰할 수 있는 서비스로 만들기 위한 방법을 고민한 프로젝트**입니다.
+
+추천 정확도보다 **추천 결과의 신뢰성**에 집중하여,
+
+LLM의 추천 → 외부 데이터 검증 → 사용자 제공
+
+이라는 구조를 직접 설계하고 구현했습니다.
+
